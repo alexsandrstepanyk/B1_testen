@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deutsch B1 Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0e14;--surface:#161820;--card:#1e2030;--border:#2a2d40;
+    --accent:#f5a623;--accent2:#e8490f;--correct:#2ecc71;--wrong:#e74c3c;
+    --text:#f0f0f5;--muted:#7a7d9a;--radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,#f5a62318 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,#e8490f12 0%,transparent 50%);pointer-events:none;}
+  #app{width:100%;max-width:580px;padding:20px;position:relative;z-index:1;}
+  .screen{display:none;} .screen.active{display:block;animation:fadeUp .4s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  .logo-flag{font-size:72px;text-align:center;margin-bottom:12px;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,10vw,64px);text-align:center;letter-spacing:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;}
+  .subtitle{text-align:center;color:var(--muted);margin:10px 0 28px;font-size:15px;}
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;}
+  .stat-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 12px;text-align:center;}
+  .stat-num{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--accent);}
+  .stat-label{font-size:12px;color:var(--muted);}
+  .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .btn{width:100%;padding:16px;border:none;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;letter-spacing:.5px;}
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 8px 32px #f5a62340;}
+  .btn-primary:hover{box-shadow:0 12px 40px #f5a62360;}
+  .btn-secondary{background:var(--card);border:1px solid var(--border);color:var(--text);margin-top:10px;}
+  .btn-mode{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text);transition:border-color .2s,background .2s;text-align:center;line-height:1.4;}
+  .btn-mode:hover{border-color:var(--accent);background:#f5a62310;}
+  .btn-mode .mode-icon{font-size:22px;display:block;margin-bottom:4px;}
+  .quiz-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .quiz-counter{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);}
+  .quiz-score{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+  .score-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+  .progress-bar{width:100%;height:4px;background:var(--border);border-radius:999px;margin-bottom:20px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px;transition:width .4s ease;}
+  .category-badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:#f5a62318;border:1px solid #f5a62340;border-radius:999px;padding:4px 12px;margin-bottom:12px;}
+  .question-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px 22px 22px;margin-bottom:16px;}
+  .question-de{font-size:21px;font-weight:600;line-height:1.4;margin-bottom:10px;}
+  .question-ua{font-size:14px;color:var(--muted);font-style:italic;}
+  .options{display:flex;flex-direction:column;gap:9px;}
+  .option{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:15px 18px;cursor:pointer;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);text-align:left;transition:border-color .2s,background .2s,transform .15s;position:relative;overflow:hidden;}
+  .option::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--accent2));opacity:0;transition:opacity .2s;}
+  .option:hover:not(:disabled){border-color:var(--accent);transform:translateX(4px);}
+  .option:hover:not(:disabled)::before{opacity:.05;}
+  .option span{position:relative;z-index:1;}
+  .option.correct{border-color:var(--correct);background:#2ecc7120;animation:bounceIn .3s ease;}
+  .option.wrong{border-color:var(--wrong);background:#e74c3c18;animation:shake .3s ease;}
+  .option:disabled{cursor:default;}
+  @keyframes bounceIn{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .feedback-bar{border-radius:var(--radius);padding:13px 16px;font-size:14px;font-weight:500;margin-bottom:14px;display:none;animation:fadeUp .3s ease;}
+  .feedback-bar.show{display:block;}
+  .feedback-bar.correct-fb{background:#2ecc7118;border:1px solid #2ecc7140;color:#2ecc71;}
+  .feedback-bar.wrong-fb{background:#e74c3c18;border:1px solid #e74c3c40;color:#e87070;}
+  .next-btn{display:none;width:100%;}
+  .next-btn.show{display:block;}
+  .result-ring{width:140px;height:140px;border-radius:50%;border:6px solid var(--border);margin:0 auto 22px;position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+  .result-ring::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:6px solid transparent;border-top-color:var(--accent);border-right-color:var(--accent2);animation:spin 1.5s ease forwards;}
+  @keyframes spin{from{transform:rotate(-90deg);opacity:0}to{transform:rotate(270deg);opacity:1}}
+  .result-pct{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--accent);line-height:1;}
+  .result-label{font-size:12px;color:var(--muted);}
+  h2{font-family:'Bebas Neue',sans-serif;font-size:34px;text-align:center;margin-bottom:8px;letter-spacing:1px;}
+  .result-msg{text-align:center;color:var(--muted);margin-bottom:24px;font-size:15px;}
+  .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+  .result-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;}
+  .result-box-num{font-family:'Bebas Neue',sans-serif;font-size:32px;}
+  .result-box-num.green{color:var(--correct);}
+  .result-box-num.red{color:var(--wrong);}
+  .result-box-label{font-size:12px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="screen active" id="startScreen">
+    <div class="logo-flag">🇩🇪</div>
+    <h1>DEUTSCH B1 QUIZ</h1>
+    <p class="subtitle">300 питань · Підготовка до іспиту B1 · Побутові фрази</p>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num">300</div><div class="stat-label">Питань</div></div>
+      <div class="stat-box"><div class="stat-num">20+</div><div class="stat-label">Тем</div></div>
+      <div class="stat-box"><div class="stat-num">B1</div><div class="stat-label">Рівень</div></div>
+    </div>
+    <div class="mode-grid">
+      <button class="btn-mode" onclick="startQuiz(20)"><span class="mode-icon">⚡</span>Швидкий<br><small>20 питань</small></button>
+      <button class="btn-mode" onclick="startQuiz(50)"><span class="mode-icon">🎯</span>Тренування<br><small>50 питань</small></button>
+      <button class="btn-mode" onclick="startQuiz(100)"><span class="mode-icon">📚</span>Серйозний<br><small>100 питань</small></button>
+      <button class="btn-mode" onclick="startQuiz(0)"><span class="mode-icon">🏆</span>Повний<br><small>всі 300</small></button>
+    </div>
+  </div>
+
+  <div class="screen" id="quizScreen">
+    <div class="quiz-header">
+      <div class="quiz-counter" id="counter">01 / 20</div>
+      <div class="quiz-score"><div class="score-dot"></div><span id="scoreDisplay">0 правильно</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="category-badge" id="categoryBadge">Дієслова</div>
+    <div class="question-card">
+      <div class="question-de" id="questionDE">...</div>
+      <div class="question-ua" id="questionUA">...</div>
+    </div>
+    <div class="options" id="optionsContainer"></div>
+    <div class="feedback-bar" id="feedbackBar"></div>
+    <button class="btn btn-primary next-btn" id="nextBtn" onclick="nextQuestion()">Далі →</button>
+  </div>
+
+  <div class="screen" id="resultsScreen">
+    <div class="result-ring">
+      <div class="result-pct" id="resultPct">0%</div>
+      <div class="result-label">результат</div>
+    </div>
+    <h2 id="resultTitle">РЕЗУЛЬТАТ</h2>
+    <p class="result-msg" id="resultMsg">...</p>
+    <div class="result-grid">
+      <div class="result-box"><div class="result-box-num green" id="correctCount">0</div><div class="result-box-label">✅ Правильно</div></div>
+      <div class="result-box"><div class="result-box-num red" id="wrongCount">0</div><div class="result-box-label">❌ Неправильно</div></div>
+    </div>
+    <div class="mode-grid">
+      <button class="btn-mode" onclick="startQuiz(20)"><span class="mode-icon">⚡</span>Ще раз<br><small>20 питань</small></button>
+      <button class="btn-mode" onclick="startQuiz(50)"><span class="mode-icon">🎯</span>Ще раз<br><small>50 питань</small></button>
+      <button class="btn-mode" onclick="startQuiz(100)"><span class="mode-icon">📚</span>Ще раз<br><small>100 питань</small></button>
+      <button class="btn-mode" onclick="startQuiz(0)"><span class="mode-icon">🏆</span>Ще раз<br><small>всі 300</small></button>
+    </div>
+  </div>
+</div>
+<script>
+const ALL_QUESTIONS = [
+  // ── ОСНОВНІ ДІЄСЛОВА ──
+  {cat:"Дієслова",de:"Ich ___ jeden Tag zur Arbeit.",ua:"Я щодня їду на роботу.",opts:["fahre","fährt","gefahren"],ans:0},
+  {cat:"Дієслова",de:"Er ___ gern Bücher.",ua:"Він охоче читає книги.",opts:["lesen","liest","las"],ans:1},
+  {cat:"Дієслова",de:"Wir ___ heute Abend.",ua:"Ми зустрічаємося сьогодні ввечері.",opts:["treffe","treffen uns","treffen"],ans:1},
+  {cat:"Дієслова",de:"Sie ___ sehr gut Deutsch.",ua:"Вона дуже добре говорить по-німецьки.",opts:["spricht","sprechen","gesprochen"],ans:0},
+  {cat:"Дієслова",de:"Ich ___ einen Kaffee.",ua:"Я хочу каву.",opts:["möchte","mögen","mag"],ans:0},
+  {cat:"Дієслова",de:"Das Kind ___ im Garten.",ua:"Дитина грається в саду.",opts:["spielen","spielt","spielte"],ans:1},
+  {cat:"Дієслова",de:"Wir ___ morgen früh aufstehen.",ua:"Нам завтра треба рано встати.",opts:["müssen","musste","müsst"],ans:0},
+  {cat:"Дієслова",de:"Er ___ schon drei Jahre in Berlin.",ua:"Він вже три роки живе в Берліні.",opts:["wohnen","wohnt","wohnte"],ans:1},
+  {cat:"Дієслова",de:"Ich ___ dir helfen.",ua:"Я можу тобі допомогти.",opts:["kann","könnte","könntest"],ans:0},
+  {cat:"Дієслова",de:"Sie ___ gestern lange gearbeitet.",ua:"Вона вчора довго працювала.",opts:["hat","haben","hatte"],ans:0},
+  {cat:"Дієслова",de:"Wir ___ nächste Woche nach München.",ua:"Ми їдемо наступного тижня до Мюнхена.",opts:["fahren","fährt","gefahren"],ans:0},
+  {cat:"Дієслова",de:"Er ___ die Aufgabe vergessen.",ua:"Він забув завдання.",opts:["hat","hatte","haben"],ans:0},
+  {cat:"Дієслова",de:"Ich ___ gerne reisen.",ua:"Я люблю подорожувати.",opts:["mag","möchte","würde"],ans:2},
+  {cat:"Дієслова",de:"Die Kinder ___ laut.",ua:"Діти кричать голосно.",opts:["schreien","schreit","schrien"],ans:0},
+  {cat:"Дієслова",de:"Er ___ jeden Morgen joggen.",ua:"Він бігає кожного ранку.",opts:["geht","gehen","gegangen"],ans:0},
+  {cat:"Дієслова",de:"Ich ___ das nicht verstehen.",ua:"Я не можу це зрозуміти.",opts:["kann","könnte","darf"],ans:0},
+  {cat:"Дієслова",de:"Sie ___ schon nach Hause gegangen.",ua:"Вона вже пішла додому.",opts:["ist","hat","war"],ans:0},
+  {cat:"Дієслова",de:"Wir ___ das Essen gekocht.",ua:"Ми приготували їжу.",opts:["haben","sind","hatten"],ans:0},
+  {cat:"Дієслова",de:"Er ___ sehr müde aus.",ua:"Він виглядає дуже втомленим.",opts:["sieht","schaut","guckt"],ans:0},
+  {cat:"Дієслова",de:"Ich ___ ihn seit Jahren.",ua:"Я знаю його роками.",opts:["kenne","weiß","kann"],ans:0},
+  {cat:"Дієслова",de:"Ich ___ die Heizung an.",ua:"Я вмикаю опалення.",opts:["mache","schalte","drehe"],ans:1},
+  {cat:"Дієслова",de:"Er ___ pünktlich zum Meeting.",ua:"Він прийшов вчасно на нараду.",opts:["kam","ist gekommen","kommt"],ans:1},
+  {cat:"Дієслова",de:"Bitte ___ die Tür zu.",ua:"Будь ласка, зачини двері.",opts:["mach","schließ","tu"],ans:0},
+  {cat:"Дієслова",de:"Ich ___ morgen früh auf.",ua:"Завтра я рано встану.",opts:["stehe","stehte","standen"],ans:0},
+  {cat:"Дієслова",de:"Sie hat ihren Geburtstag ___.",ua:"Вона відсвяткувала день народження.",opts:["gefeiert","gemacht","begangen"],ans:0},
+  {cat:"Дієслова",de:"Er hat sich auf den Job ___.",ua:"Він подав заявку на роботу.",opts:["beworben","angemeldet","eingestellt"],ans:0},
+  {cat:"Дієслова",de:"Wir haben das Treffen ___.",ua:"Ми перенесли зустріч.",opts:["verschoben","abgesagt","vergessen"],ans:0},
+  {cat:"Дієслова",de:"Das Kind ___ laut.",ua:"Дитина плаче голосно.",opts:["weint","lacht","schreit"],ans:0},
+  {cat:"Дієслова",de:"Ich ___ täglich Sport.",ua:"Я щодня займаюся спортом.",opts:["treibe","mache","übe"],ans:0},
+  {cat:"Дієслова",de:"Er ___ ein neues Auto.",ua:"Він купив нову машину.",opts:["hat gekauft","kaufte","gekauft hat"],ans:0},
+  // ── МОДАЛЬНІ ДІЄСЛОВА ──
+  {cat:"Модальні",de:"Du ___ hier nicht rauchen.",ua:"Тут не можна курити.",opts:["darfst","musst","sollst"],ans:0},
+  {cat:"Модальні",de:"Er ___ morgen zum Arzt gehen.",ua:"Йому завтра треба йти до лікаря.",opts:["muss","soll","darf"],ans:0},
+  {cat:"Модальні",de:"___ wir das Fenster öffnen?",ua:"Можна відкрити вікно?",opts:["Dürfen","Können","Müssen"],ans:1},
+  {cat:"Модальні",de:"Sie ___ sehr gut tanzen.",ua:"Вона вміє дуже добре танцювати.",opts:["kann","mag","muss"],ans:0},
+  {cat:"Модальні",de:"Ich ___ heute früher kommen.",ua:"Мені б хотілося прийти сьогодні раніше.",opts:["möchte","muss","darf"],ans:0},
+  {cat:"Модальні",de:"Er ___ lauter sprechen.",ua:"Йому слід говорити голосніше.",opts:["sollte","müsste","könnte"],ans:0},
+  {cat:"Модальні",de:"Wir ___ das nicht tun.",ua:"Нам не можна цього робити.",opts:["dürfen","müssen","sollen"],ans:0},
+  {cat:"Модальні",de:"Du ___ früher schlafen gehen.",ua:"Тобі слід раніше лягати спати.",opts:["solltest","müsstest","dürftest"],ans:0},
+  {cat:"Модальні",de:"Das ___ nicht wahr sein.",ua:"Це не може бути правдою.",opts:["kann","darf","muss"],ans:0},
+  {cat:"Модальні",de:"Sie ___ das Buch lesen.",ua:"Їй варто прочитати цю книгу.",opts:["soll","kann","muss"],ans:0},
+  // ── PERFEKT ──
+  {cat:"Perfekt",de:"Ich ___ gestern ins Kino gegangen.",ua:"Вчора я ходив у кіно.",opts:["bin","habe","war"],ans:0},
+  {cat:"Perfekt",de:"Sie ___ das Buch gelesen.",ua:"Вона прочитала книгу.",opts:["hat","ist","hatte"],ans:0},
+  {cat:"Perfekt",de:"Wir ___ lange geschlafen.",ua:"Ми довго спали.",opts:["haben","sind","hatten"],ans:0},
+  {cat:"Perfekt",de:"Er ___ nach Berlin gefahren.",ua:"Він поїхав до Берліна.",opts:["ist","hat","war"],ans:0},
+  {cat:"Perfekt",de:"Die Kinder ___ im Park gespielt.",ua:"Діти гралися в парку.",opts:["haben","sind","hatten"],ans:0},
+  {cat:"Perfekt",de:"Ich ___ meinen Schlüssel verloren.",ua:"Я загубив свій ключ.",opts:["habe","bin","hatte"],ans:0},
+  {cat:"Perfekt",de:"Sie ___ früh aufgestanden.",ua:"Вона рано встала.",opts:["ist","hat","war"],ans:0},
+  {cat:"Perfekt",de:"Wir ___ den Zug verpasst.",ua:"Ми пропустили поїзд.",opts:["haben","sind","hatten"],ans:0},
+  {cat:"Perfekt",de:"Er ___ heute viel getrunken.",ua:"Він сьогодні багато випив.",opts:["hat","ist","war"],ans:0},
+  {cat:"Perfekt",de:"Ich ___ ihn angerufen.",ua:"Я йому зателефонував.",opts:["habe","bin","hatte"],ans:0},
+  // ── ПРИЙМЕННИКИ ──
+  {cat:"Прийменники",de:"Ich fahre ___ die Arbeit mit dem Bus.",ua:"Я їду на роботу автобусом.",opts:["zu","in","nach"],ans:0},
+  {cat:"Прийменники",de:"Das Buch liegt ___ dem Tisch.",ua:"Книга лежить на столі.",opts:["auf","an","über"],ans:0},
+  {cat:"Прийменники",de:"Er wohnt ___ Berlin.",ua:"Він живе в Берліні.",opts:["in","nach","an"],ans:0},
+  {cat:"Прийменники",de:"Wir treffen uns ___ dem Bahnhof.",ua:"Ми зустрічаємося перед вокзалом.",opts:["vor","nach","an"],ans:0},
+  {cat:"Прийменники",de:"Das Café ist ___ der Bibliothek.",ua:"Кафе поруч з бібліотекою.",opts:["neben","über","unter"],ans:0},
+  {cat:"Прийменники",de:"Ich bin ___ dem Supermarkt.",ua:"Я перебуваю в супермаркеті.",opts:["in","bei","nach"],ans:1},
+  {cat:"Прийменники",de:"Sie kommt ___ der Schule.",ua:"Вона приходить зі школи.",opts:["aus","von","bei"],ans:0},
+  {cat:"Прийменники",de:"Wir fahren ___ Frankfurt.",ua:"Ми їдемо до Франкфурта.",opts:["nach","zu","in"],ans:0},
+  {cat:"Прийменники",de:"Das Bild hängt ___ der Wand.",ua:"Картина висить на стіні.",opts:["an","auf","über"],ans:0},
+  {cat:"Прийменники",de:"Er arbeitet ___ einem Arzt.",ua:"Він працює у лікаря.",opts:["bei","mit","zu"],ans:0},
+  {cat:"Прийменники",de:"Ich interessiere mich ___ Kunst.",ua:"Я цікавлюся мистецтвом.",opts:["für","an","über"],ans:0},
+  {cat:"Прийменники",de:"Sie freut sich ___ das Geschenk.",ua:"Вона радіє подарунку.",opts:["über","auf","für"],ans:0},
+  {cat:"Прийменники",de:"Wir warten ___ den Bus.",ua:"Ми чекаємо на автобус.",opts:["auf","für","nach"],ans:0},
+  {cat:"Прийменники",de:"Er denkt ___ seine Familie.",ua:"Він думає про свою сім'ю.",opts:["an","über","bei"],ans:0},
+  {cat:"Прийменники",de:"Ich spreche ___ meinem Chef.",ua:"Я розмовляю зі своїм керівником.",opts:["mit","zu","von"],ans:0},
+  {cat:"Прийменники",de:"Sie kümmert sich ___ die Kinder.",ua:"Вона дбає про дітей.",opts:["um","für","an"],ans:0},
+  {cat:"Прийменники",de:"Er besteht ___ seinem Recht.",ua:"Він наполягає на своєму праві.",opts:["auf","in","über"],ans:0},
+  // ── ЩОДЕННІ ФРАЗИ ──
+  {cat:"Щоденні фрази",de:"Guten ___, wie war Ihr Tag?",ua:"Добрий вечір, як пройшов ваш день?",opts:["Abend","Morgen","Tag"],ans:0},
+  {cat:"Щоденні фрази",de:"Bis ___! Tschüss!",ua:"До завтра! Бувай!",opts:["morgen","später","bald"],ans:0},
+  {cat:"Щоденні фрази",de:"___ dir!",ua:"Будь здоровий!",opts:["Gesundheit","Prost","Mahlzeit"],ans:0},
+  {cat:"Щоденні фрази",de:"Das macht ___!",ua:"Нічого страшного!",opts:["nichts","nicht","keins"],ans:0},
+  {cat:"Щоденні фрази",de:"Kein ___!",ua:"Не проблема!",opts:["Problem","Stress","Sorge"],ans:0},
+  {cat:"Щоденні фрази",de:"Auf jeden ___!",ua:"Звісно / Обов'язково!",opts:["Fall","Tag","Mal"],ans:0},
+  {cat:"Щоденні фрази",de:"Es tut mir ___.",ua:"Мені шкода / Пробачте.",opts:["leid","gut","weh"],ans:0},
+  {cat:"Щоденні фрази",de:"Ich bin gleich ___.",ua:"Я зараз повернуся.",opts:["zurück","fertig","da"],ans:0},
+  {cat:"Щоденні фрази",de:"Das ist mir ___.",ua:"Мені все одно.",opts:["egal","wichtig","klar"],ans:0},
+  {cat:"Щоденні фрази",de:"Keine ___!",ua:"Без паніки!",opts:["Panik","Angst","Ahnung"],ans:0},
+  {cat:"Щоденні фрази",de:"Ich habe keine ___.",ua:"Я не маю уяви / Не знаю.",opts:["Ahnung","Zeit","Lust"],ans:0},
+  {cat:"Щоденні фрази",de:"Mach ___ keine Sorgen!",ua:"Не хвилюйся!",opts:["dir","dich","sich"],ans:0},
+  {cat:"Щоденні фрази",de:"Das klingt ___.",ua:"Це звучить добре.",opts:["gut","gute","gutend"],ans:0},
+  {cat:"Щоденні фрази",de:"Ich bin ___ dran.",ua:"Зараз моя черга.",opts:["dran","da","drin"],ans:0},
+  {cat:"Щоденні фрази",de:"Moment ___, bitte!",ua:"Одну хвилинку, будь ласка!",opts:["mal","noch","kurz"],ans:0},
+  {cat:"Щоденні фрази",de:"Das lohnt sich ___!",ua:"Це того варте!",opts:["wirklich","echt","kaum"],ans:0},
+  {cat:"Щоденні фрази",de:"Das war gar nicht so ___.",ua:"Це було зовсім не погано.",opts:["schlecht","gut","schön"],ans:0},
+  {cat:"Щоденні фрази",de:"Ich habe ___ keine Lust.",ua:"У мене зовсім немає бажання.",opts:["gar","kein","nicht"],ans:0},
+  {cat:"Щоденні фрази",de:"Na ___?",ua:"Ну що? Як справи?",opts:["und","ja","los"],ans:0},
+  {cat:"Щоденні фрази",de:"Schön, dich zu ___!",ua:"Радий тебе бачити!",opts:["sehen","treffen","kennen"],ans:0},
+  // ── ВВІЧЛИВІСТЬ ──
+  {cat:"Ввічливість",de:"Würden Sie mir bitte ___ helfen?",ua:"Не могли б ви допомогти мені?",opts:["dabei","doch","mal"],ans:0},
+  {cat:"Ввічливість",de:"Darf ich Sie etwas ___?",ua:"Дозвольте запитати вас дещо?",opts:["fragen","bitten","stören"],ans:0},
+  {cat:"Ввічливість",de:"Vielen ___ für Ihre Hilfe!",ua:"Велике дякую за вашу допомогу!",opts:["Dank","Danke","Herzlichen"],ans:0},
+  {cat:"Ввічливість",de:"Bitte ___ Sie Platz!",ua:"Будь ласка, сідайте!",opts:["nehmen","machen","haben"],ans:0},
+  {cat:"Ввічливість",de:"Entschuldigen Sie die ___!",ua:"Вибачте за запізнення!",opts:["Verspätung","Wartezeit","Störung"],ans:0},
+  {cat:"Ввічливість",de:"Darf ich ___ stören?",ua:"Можна вас потурбувати?",opts:["kurz","mal","einmal"],ans:0},
+  {cat:"Ввічливість",de:"Wie war das, ___?",ua:"Як ви сказали, вибачте?",opts:["bitte","danke","sorry"],ans:0},
+  // ── БАНК/ГРОШІ ──
+  {cat:"Банк/Гроші",de:"Ich möchte Geld ___.",ua:"Я хочу зняти гроші.",opts:["abheben","einzahlen","überweisen"],ans:0},
+  {cat:"Банк/Гроші",de:"Kann ich mit ___ zahlen?",ua:"Можу я платити карткою?",opts:["Karte","Bar","EC"],ans:0},
+  {cat:"Банк/Гроші",de:"Ich brauche ein ___.",ua:"Мені потрібен банківський рахунок.",opts:["Konto","Kredit","Darlehen"],ans:0},
+  {cat:"Банк/Гроші",de:"Wann ist das Geld auf dem ___ ?",ua:"Коли гроші будуть на рахунку?",opts:["Konto","Portemonnaie","Sparbuch"],ans:0},
+  {cat:"Банк/Гроші",de:"Ich habe kein ___ mehr.",ua:"У мене більше немає готівки.",opts:["Bargeld","Geld","Kleingeld"],ans:0},
+  {cat:"Банк/Гроші",de:"Der Kontoauszug zeigt das ___.",ua:"Виписка показує сальдо.",opts:["Guthaben","Geld","Konto"],ans:0},
+  {cat:"Банк/Гроші",de:"Ich möchte Geld ___.",ua:"Я хочу переказати гроші.",opts:["überweisen","abheben","wechseln"],ans:0},
+  // ── ОРІЄНТАЦІЯ В МІСТІ ──
+  {cat:"Орієнтація",de:"Wie komme ich zum ___?",ua:"Як дістатися до центру?",opts:["Stadtzentrum","Markt","Bahnhof"],ans:0},
+  {cat:"Орієнтація",de:"Gehen Sie ___ geradeaus.",ua:"Іди прямо.",opts:["immer","geradeaus","dort"],ans:0},
+  {cat:"Орієнтація",de:"Biegen Sie ___ ab.",ua:"Поверніть ліворуч.",opts:["links","rechts","geradeaus"],ans:0},
+  {cat:"Орієнтація",de:"Es ist ___ 500 Meter entfernt.",ua:"Це приблизно 500 метрів звідси.",opts:["ungefähr","genau","etwa"],ans:0},
+  {cat:"Орієнтація",de:"Wo ist die nächste ___?",ua:"Де найближча зупинка автобуса?",opts:["Bushaltestelle","Tankstelle","Kreuzung"],ans:0},
+  {cat:"Орієнтація",de:"Ist das weit von ___?",ua:"Це далеко звідси?",opts:["hier","dort","da"],ans:0},
+  {cat:"Орієнтація",de:"Können Sie mir den ___ zeigen?",ua:"Ви можете показати мені шлях?",opts:["Weg","Ort","Platz"],ans:0},
+  {cat:"Орієнтація",de:"Die zweite Straße ___.",ua:"Друга вулиця праворуч.",opts:["rechts","links","geradeaus"],ans:0},
+  // ── ПОГОДА ──
+  {cat:"Погода",de:"Heute ___ es 25 Grad.",ua:"Сьогодні 25 градусів.",opts:["sind","hat","ist"],ans:0},
+  {cat:"Погода",de:"Der Wetterbericht sagt ___ voraus.",ua:"Прогноз погоди передбачає дощ.",opts:["Regen","Sonne","Schnee"],ans:0},
+  {cat:"Погода",de:"Im Frühling ___ es viel.",ua:"Навесні часто йде дощ.",opts:["regnet","schneit","stürmt"],ans:0},
+  {cat:"Погода",de:"Heute ___ die Sonne.",ua:"Сьогодні світить сонце.",opts:["scheint","brennt","leuchtet"],ans:0},
+  {cat:"Погода",de:"Es ist ___ kalt draußen.",ua:"Надворі дуже холодно.",opts:["sehr","zu","so"],ans:0},
+  {cat:"Погода",de:"Ich nehme einen Schirm ___, es sieht nach Regen aus.",ua:"Я візьму парасольку, схоже на дощ.",opts:["mit","her","hin"],ans:0},
+  {cat:"Погода",de:"Der Wind ___ stark.",ua:"Вітер дує сильно.",opts:["bläst","ist","weht"],ans:2},
+  // ── НАВЧАННЯ ──
+  {cat:"Навчання",de:"Ich besuche einen ___ Kurs.",ua:"Я відвідую мовний курс.",opts:["Sprach","Deutsch","Lern"],ans:0},
+  {cat:"Навчання",de:"Die Prüfung ist nächste ___.",ua:"Іспит наступного тижня.",opts:["Woche","Monat","Jahr"],ans:0},
+  {cat:"Навчання",de:"Ich habe die Prüfung ___.",ua:"Я склав іспит.",opts:["bestanden","gemacht","geschrieben"],ans:0},
+  {cat:"Навчання",de:"Ich habe das Wort ___.",ua:"Я забув слово.",opts:["vergessen","verloren","verpasst"],ans:0},
+  {cat:"Навчання",de:"Was bedeutet dieses ___?",ua:"Що означає це слово?",opts:["Wort","Satz","Buchstabe"],ans:0},
+  {cat:"Навчання",de:"Ich lerne ___ mit Karteikarten.",ua:"Я вчу слова за картками.",opts:["Vokabeln","Grammatik","Sätze"],ans:0},
+  {cat:"Навчання",de:"Haben Sie die ___ gemacht?",ua:"Ви зробили домашнє завдання?",opts:["Hausaufgaben","Aufgaben","Übungen"],ans:0},
+  {cat:"Навчання",de:"Der Unterricht beginnt ___ 9 Uhr.",ua:"Урок починається о 9 годині.",opts:["um","an","bei"],ans:0},
+  // ── СІМ'Я ──
+  {cat:"Сім'я",de:"Ich habe zwei ___ und einen Bruder.",ua:"У мене є дві сестри та брат.",opts:["Schwestern","Brüder","Töchter"],ans:0},
+  {cat:"Сім'я",de:"Meine ___ wohnt in der Ukraine.",ua:"Моя мама живе в Україні.",opts:["Mutter","Schwester","Tante"],ans:0},
+  {cat:"Сім'я",de:"Er ist mit ihr ___.",ua:"Він одружений з нею.",opts:["verheiratet","verlobt","befreundet"],ans:0},
+  {cat:"Сім'я",de:"Wir erwarten ein ___.",ua:"Ми чекаємо на дитину.",opts:["Baby","Kind","Mädchen"],ans:0},
+  {cat:"Сім'я",de:"Mein Vater ist ___.",ua:"Мій батько на пенсії.",opts:["in Rente","krank","müde"],ans:0},
+  {cat:"Сім'я",de:"Sie sind seit zehn Jahren ___.",ua:"Вони одружені вже десять років.",opts:["verheiratet","zusammen","verlobt"],ans:0},
+  {cat:"Сім'я",de:"Meine Großeltern leben auf dem ___.",ua:"Мої дідусь і бабуся живуть у селі.",opts:["Land","Dorf","Bauernhof"],ans:0},
+  // ── ХОБІ / ВІЛЬНИЙ ЧАС ──
+  {cat:"Хобі",de:"In meiner Freizeit ___ ich gerne.",ua:"У вільний час я охоче читаю.",opts:["lese","mache","treffe"],ans:0},
+  {cat:"Хобі",de:"Ich ___ gerne ins Schwimmbad.",ua:"Я охоче ходжу в басейн.",opts:["gehe","fahre","komme"],ans:0},
+  {cat:"Хобі",de:"Er spielt leidenschaftlich gern ___.",ua:"Він пристрасно грає на гітарі.",opts:["Gitarre","Klavier","Fußball"],ans:0},
+  {cat:"Хобі",de:"Ich mache dreimal pro Woche ___.",ua:"Я займаюся спортом три рази на тиждень.",opts:["Sport","Fitness","Training"],ans:0},
+  {cat:"Хобі",de:"Am Wochenende ___ wir oft Freunde.",ua:"На вихідних ми часто зустрічаємося з друзями.",opts:["treffen","sehen","besuchen"],ans:0},
+  {cat:"Хобі",de:"Wir gehen heute Abend ___ tanzen.",ua:"Сьогодні ввечері ми йдемо танцювати.",opts:["aus","raus","weg"],ans:0},
+  {cat:"Хобі",de:"Ich schaue gerne ___ im Fernsehen.",ua:"Я охоче дивлюся фільми по телевізору.",opts:["Filme","Sport","Serien"],ans:0},
+  // ── РЕСТОРАН ──
+  {cat:"Ресторан",de:"Was ___ Sie empfehlen?",ua:"Що ви можете порекомендувати?",opts:["können","würden","möchten"],ans:0},
+  {cat:"Ресторан",de:"Ich ___ vegetarisch.",ua:"Я харчуюся вегетаріанськи.",opts:["esse","bin","lebe"],ans:0},
+  {cat:"Ресторан",de:"Zahlen bitte! – ___ oder getrennt?",ua:"Рахунок! — Разом чи окремо?",opts:["Zusammen","Einzeln","Separat"],ans:0},
+  {cat:"Ресторан",de:"Ich hätte gerne die ___, bitte.",ua:"Мені б хотілося меню, будь ласка.",opts:["Speisekarte","Rechnung","Quittung"],ans:0},
+  {cat:"Ресторан",de:"Das Gericht ___ sehr lecker.",ua:"Страва дуже смачна.",opts:["schmeckt","ist","riecht"],ans:0},
+  {cat:"Ресторан",de:"Haben Sie noch ___ frei?",ua:"У вас є вільні місця?",opts:["Plätze","Tische","Stühle"],ans:1},
+  {cat:"Ресторан",de:"Ich bin ___ gegen Nüsse.",ua:"У мене алергія на горіхи.",opts:["allergisch","empfindlich","unverträglich"],ans:0},
+  {cat:"Ресторан",de:"Bringen Sie mir bitte noch ___.",ua:"Принесіть мені ще води, будь ласка.",opts:["Wasser","Brot","etwas"],ans:0},
+  // ── ПОКУПКИ ──
+  {cat:"Покупки",de:"Das ist mir zu ___.",ua:"Це для мене занадто дорого.",opts:["teuer","billig","günstig"],ans:0},
+  {cat:"Покупки",de:"Haben Sie das in Größe ___?",ua:"Є у вас це у розмірі M?",opts:["M","groß","mittel"],ans:0},
+  {cat:"Покупки",de:"Kann ich das ___?",ua:"Можу я це приміряти?",opts:["anprobieren","kaufen","nehmen"],ans:0},
+  {cat:"Покупки",de:"Wo ist die ___?",ua:"Де каса?",opts:["Kasse","Abteilung","Kabine"],ans:0},
+  {cat:"Покупки",de:"Ich möchte das gerne ___.",ua:"Я хочу це повернути.",opts:["zurückgeben","umtauschen","bezahlen"],ans:0},
+  {cat:"Покупки",de:"Es gibt gerade einen ___.",ua:"Зараз є розпродаж.",opts:["Ausverkauf","Rabatt","Angebot"],ans:0},
+  {cat:"Покупки",de:"Kann ich eine ___ haben?",ua:"Можу я отримати квитанцію?",opts:["Quittung","Rechnung","Tüte"],ans:0},
+  // ── КВАРТИРА ──
+  {cat:"Квартира",de:"Die ___ kostet 800 Euro warm.",ua:"Квартира коштує 800 євро з комунальними.",opts:["Wohnung","Miete","Zimmer"],ans:0},
+  {cat:"Квартира",de:"Ich ___ die Wohnung seit einem Jahr.",ua:"Я знімаю квартиру вже рік.",opts:["miete","leihe","kaufe"],ans:0},
+  {cat:"Квартира",de:"Der ___ tropft.",ua:"Кран капає.",opts:["Wasserhahn","Hahn","Abfluss"],ans:0},
+  {cat:"Квартира",de:"Ich muss den Müll ___.",ua:"Мені треба винести сміття.",opts:["rausbringen","wegwerfen","entsorgen"],ans:0},
+  {cat:"Квартира",de:"Wann ist die Miete ___?",ua:"Коли треба платити оренду?",opts:["fällig","zahlbar","fertig"],ans:0},
+  {cat:"Квартира",de:"Die Heizung ___.",ua:"Опалення не працює.",opts:["funktioniert nicht","ist kaputt","heizt nicht"],ans:0},
+  {cat:"Квартира",de:"Wer ist der ___?",ua:"Хто орендодавець?",opts:["Vermieter","Mieter","Nachbar"],ans:0},
+  {cat:"Квартира",de:"Die Wohnung ist ___ möbliert.",ua:"Квартира повністю мебльована.",opts:["komplett","voll","ganz"],ans:0},
+  // ── ТРАНСПОРТ ──
+  {cat:"Транспорт",de:"Wo ist die nächste U-Bahn-___?",ua:"Де найближча станція метро?",opts:["Station","Haltestelle","Linie"],ans:0},
+  {cat:"Транспорт",de:"Ich möchte eine Fahrkarte ___ München.",ua:"Я хочу квиток до Мюнхена.",opts:["nach","zu","in"],ans:0},
+  {cat:"Транспорт",de:"Wie lange ___ die Fahrt?",ua:"Скільки часу займає поїздка?",opts:["dauert","fährt","geht"],ans:0},
+  {cat:"Транспорт",de:"Der Zug hat ___ Minuten Verspätung.",ua:"Поїзд запізнюється на 10 хвилин.",opts:["zehn","zehnter","zehnte"],ans:0},
+  {cat:"Транспорт",de:"Ist hier noch ___ ?",ua:"Це місце ще вільне?",opts:["frei","leer","besetzt"],ans:0},
+  {cat:"Транспорт",de:"Von welchem ___ fährt der Zug ab?",ua:"З якої платформи відправляється поїзд?",opts:["Gleis","Bahnhof","Richtung"],ans:0},
+  {cat:"Транспорт",de:"Entschuldigung, ___ ich vorbei?",ua:"Вибачте, можу я пройти?",opts:["darf","kann","dürfte"],ans:0},
+  {cat:"Транспорт",de:"Man muss hier ___.",ua:"Тут треба пересісти.",opts:["umsteigen","einsteigen","aussteigen"],ans:0},
+  // ── ЛІКАР / ЗДОРОВ'Я ──
+  {cat:"Лікар",de:"Ich ___ Kopfschmerzen.",ua:"У мене болить голова.",opts:["habe","bin","mache"],ans:0},
+  {cat:"Лікар",de:"Wo tut es ___?",ua:"Де болить?",opts:["weh","schlimm","gut"],ans:0},
+  {cat:"Лікар",de:"Ich habe ___ im Bauch.",ua:"У мене болить живіт.",opts:["Schmerzen","Weh","Stechen"],ans:0},
+  {cat:"Лікар",de:"Sind Sie ___ gegen Penicillin?",ua:"У вас є алергія на пеніцилін?",opts:["allergisch","empfindlich","krank"],ans:0},
+  {cat:"Лікар",de:"Nehmen Sie die Tabletten ___ täglich.",ua:"Приймайте таблетки тричі на день.",opts:["dreimal","zweimal","einmal"],ans:0},
+  {cat:"Лікар",de:"Ich bin ___ krank.",ua:"Я хворий вже тиждень.",opts:["seit einer Woche","schon","seit langem"],ans:0},
+  {cat:"Лікар",de:"Ich brauche einen ___ beim Arzt.",ua:"Мені потрібен запис до лікаря.",opts:["Termin","Schein","Zettel"],ans:0},
+  {cat:"Лікар",de:"Bitte atmen Sie ___ ein.",ua:"Будь ласка, вдихніть глибоко.",opts:["tief","kurz","langsam"],ans:0},
+  {cat:"Лікар",de:"Ich fühle mich heute nicht ___.",ua:"Сьогодні я почуваюся нездоровим.",opts:["wohl","gut","krank"],ans:0},
+  {cat:"Лікар",de:"Der Arzt hat mir ___ gegeben.",ua:"Лікар дав мені рецепт.",opts:["ein Rezept","Tabletten","Rat"],ans:0},
+  // ── РОБОТА ──
+  {cat:"Робота",de:"Ich arbeite ___ Stunden pro Woche.",ua:"Я працюю 40 годин на тиждень.",opts:["vierzig","dreißig","fünfzig"],ans:0},
+  {cat:"Робота",de:"Das Vorstellungsgespräch ist ___.",ua:"Співбесіда завтра.",opts:["morgen","übermorgen","gestern"],ans:0},
+  {cat:"Робота",de:"Ich bin seit zwei Jahren bei dieser ___.",ua:"Я вже два роки в цій компанії.",opts:["Firma","Stelle","Branche"],ans:0},
+  {cat:"Робота",de:"Er hat sich ___ gemeldet.",ua:"Він взяв лікарняний.",opts:["krank","frei","schriftlich"],ans:0},
+  {cat:"Робота",de:"Ich habe Urlaub ___.",ua:"Я подав заявку на відпустку.",opts:["beantragt","genommen","gemacht"],ans:0},
+  {cat:"Робота",de:"Das Meeting beginnt ___ 10 Uhr.",ua:"Нарада починається о 10 годині.",opts:["um","an","bei"],ans:0},
+  {cat:"Робота",de:"Das Gehalt wird ___ überwiesen.",ua:"Зарплата перераховується щомісяця.",opts:["monatlich","wöchentlich","täglich"],ans:0},
+  {cat:"Робота",de:"Ich arbeite ___ Homeoffice.",ua:"Я працюю з дому.",opts:["im","vom","im"],ans:0},
+  // ── ТЕЛЕФОННА РОЗМОВА ──
+  {cat:"Телефон",de:"Guten Tag, hier ist ___.",ua:"Добрий день, це Анна Мюллер.",opts:["Anna Müller","ich","meine Person"],ans:0},
+  {cat:"Телефон",de:"Können Sie mich bitte ___?",ua:"Чи можете ви мене з'єднати?",opts:["verbinden","weiterleiten","durchstellen"],ans:2},
+  {cat:"Телефон",de:"Er ist gerade nicht ___.",ua:"Він зараз недоступний.",opts:["verfügbar","da","am Apparat"],ans:1},
+  {cat:"Телефон",de:"Ich hinterlasse eine ___.",ua:"Я залишу повідомлення.",opts:["Nachricht","Notiz","Nummer"],ans:0},
+  {cat:"Телефон",de:"Auf welche Nummer kann ich Sie ___?",ua:"За яким номером я можу вам зателефонувати?",opts:["erreichen","anrufen","finden"],ans:0},
+  {cat:"Телефон",de:"Ich rufe Sie ___ zurück.",ua:"Я передзвоню вам пізніше.",opts:["später","gleich","bald"],ans:0},
+  {cat:"Телефон",de:"Mein Akku ist ___.",ua:"Мій акумулятор розряджений.",opts:["leer","aus","kaputt"],ans:0},
+  // ── ОФІЦІЙНЕ ──
+  {cat:"Офіційне",de:"Ich muss mich beim ___ anmelden.",ua:"Мені треба зареєструватися в адміністрації.",opts:["Amt","Büro","Schalter"],ans:0},
+  {cat:"Офіційне",de:"Wo ist das ___?",ua:"Де міська адміністрація?",opts:["Rathaus","Einwohnermeldeamt","Standesamt"],ans:0},
+  {cat:"Офіційне",de:"Ich brauche eine ___.",ua:"Мені потрібна довідка.",opts:["Bescheinigung","Quittung","Rechnung"],ans:0},
+  {cat:"Офіційне",de:"Haben Sie Ihren ___ dabei?",ua:"У вас є ваш паспорт при собі?",opts:["Reisepass","Führerschein","Ausweis"],ans:2},
+  {cat:"Офіційне",de:"Das Formular muss ___ werden.",ua:"Форму потрібно заповнити.",opts:["ausgefüllt","unterschrieben","abgegeben"],ans:0},
+  {cat:"Офіційне",de:"Bitte ___ Sie hier.",ua:"Будь ласка, підпишіть тут.",opts:["unterschreiben","schreiben","bestätigen"],ans:0},
+  {cat:"Офіційне",de:"Der Ausweis ist ___ abgelaufen.",ua:"Паспорт втратив чинність.",opts:["bereits","noch nicht","fast"],ans:0},
+  // ── KONJUNKTIV II ──
+  {cat:"Konjunktiv II",de:"Ich ___ gerne mehr schlafen.",ua:"Я б хотів спати більше.",opts:["würde","wäre","hätte"],ans:0},
+  {cat:"Konjunktiv II",de:"___ du mir bitte helfen?",ua:"Міг би ти мені допомогти?",opts:["Könntest","Würdest","Solltest"],ans:0},
+  {cat:"Konjunktiv II",de:"Es ___ schön, wenn du kommst.",ua:"Було б добре, якби ти прийшов.",opts:["wäre","würde","hätte"],ans:0},
+  {cat:"Konjunktiv II",de:"Wenn ich mehr Zeit ___, würde ich reisen.",ua:"Якби у мене було більше часу, я б подорожував.",opts:["hätte","wäre","könnte"],ans:0},
+  {cat:"Konjunktiv II",de:"An deiner Stelle ___ ich das nicht tun.",ua:"На твоєму місці я б цього не робив.",opts:["würde","wäre","könnte"],ans:0},
+  {cat:"Konjunktiv II",de:"Das ___ nicht passiert sein.",ua:"Цього не мало б статися.",opts:["hätte","wäre","würde"],ans:0},
+  {cat:"Konjunktiv II",de:"___ Sie mir bitte sagen, wie spät es ist?",ua:"Не могли б ви сказати мені, котра година?",opts:["Könnten","Würden","Sollten"],ans:0},
+  // ── СПОЛУЧНИКИ ──
+  {cat:"Сполучники",de:"Ich bleibe zuhause, ___ es regnet.",ua:"Я залишаюся вдома, бо йде дощ.",opts:["weil","wenn","dass"],ans:0},
+  {cat:"Сполучники",de:"Sie lernt fleißig, ___ sie die Prüfung besteht.",ua:"Вона старанно вчиться, щоб скласти іспит.",opts:["damit","sodass","weil"],ans:0},
+  {cat:"Сполучники",de:"___ er müde war, arbeitete er weiter.",ua:"Хоча він був втомлений, він продовжував працювати.",opts:["Obwohl","Weil","Wenn"],ans:0},
+  {cat:"Сполучники",de:"Ich weiß nicht, ___ er kommt oder nicht.",ua:"Я не знаю, чи він прийде.",opts:["ob","wenn","dass"],ans:0},
+  {cat:"Сполучники",de:"___ ich fertig bin, rufe ich dich an.",ua:"Коли я закінчу, подзвоню тобі.",opts:["Sobald","Wenn","Als"],ans:0},
+  {cat:"Сполучники",de:"Er ist nett, ___ manchmal zu laut.",ua:"Він приємний, але іноді занадто гучний.",opts:["aber","jedoch","doch"],ans:0},
+  {cat:"Сполучники",de:"Sie hat Hunger, ___ sie nichts isst.",ua:"Вона голодна, проте нічого не їсть.",opts:["trotzdem","deshalb","dennoch"],ans:0},
+  {cat:"Сполучники",de:"Ich lerne Deutsch, ___ ich in Deutschland wohnen möchte.",ua:"Я вчу німецьку, бо хочу жити в Німеччині.",opts:["weil","dass","wenn"],ans:0},
+  {cat:"Сполучники",de:"Er sagt, ___ er krank ist.",ua:"Він каже, що він хворий.",opts:["dass","weil","ob"],ans:0},
+  // ── ЗВОРОТНІ ДІЄСЛОВА ──
+  {cat:"Зворотні дієслова",de:"Ich ___ über seine Worte.",ua:"Я дивуюся його словам.",opts:["wundere mich","freue mich","ärgere mich"],ans:0},
+  {cat:"Зворотні дієслова",de:"Sie ___ sehr.",ua:"Вона дуже злиться.",opts:["ärgert sich","freut sich","wundert sich"],ans:0},
+  {cat:"Зворотні дієслова",de:"Wir ___ auf die Reise.",ua:"Ми радіємо поїздці.",opts:["freuen uns","gewöhnen uns","erinnern uns"],ans:0},
+  {cat:"Зворотні дієслова",de:"Er ___ an das kalte Wetter.",ua:"Він звикає до холодної погоди.",opts:["gewöhnt sich","erinnert sich","fühlt sich"],ans:0},
+  {cat:"Зворотні дієслова",de:"Ich ___ an meinen Urlaub.",ua:"Я згадую про свою відпустку.",opts:["erinnere mich","kümmere mich","beschwere mich"],ans:0},
+  {cat:"Зворотні дієслова",de:"Sie hat ___ verliebt.",ua:"Вона закохалася.",opts:["sich","ihr","sich selbst"],ans:0},
+  // ── МАЙБУТНІЙ ЧАС ──
+  {cat:"Майбутній час",de:"Nächstes Jahr ___ ich Deutsch lernen.",ua:"Наступного року я буду вчити німецьку.",opts:["werde","wirst","wird"],ans:0},
+  {cat:"Майбутній час",de:"Sie ___ bald ankommen.",ua:"Вона скоро приїде.",opts:["wird","werde","werden"],ans:0},
+  {cat:"Майбутній час",de:"Wir ___ morgen ins Kino gehen.",ua:"Завтра ми підемо в кіно.",opts:["werden","wollen","würden"],ans:0},
+  {cat:"Майбутній час",de:"Das ___ sich bestimmt verbessern.",ua:"Це обов'язково покращиться.",opts:["wird","würde","wäre"],ans:0},
+  // ── ДУМКИ / ДИСКУСІЯ ──
+  {cat:"Думки/Дискусія",de:"Das sehe ich ___ anders.",ua:"Я бачу це трохи інакше.",opts:["etwas","sehr","ganz"],ans:0},
+  {cat:"Думки/Дискусія",de:"Meiner ___ nach ist das falsch.",ua:"На мою думку, це неправильно.",opts:["Meinung","Ansicht","Idee"],ans:0},
+  {cat:"Думки/Дискусія",de:"Da bin ich ___ einverstanden.",ua:"З цим я не згоден.",opts:["nicht","kaum","wenig"],ans:0},
+  {cat:"Думки/Дискусія",de:"Einerseits…, ___.",ua:"З одного боку… з іншого боку.",opts:["andererseits","dagegen","jedoch"],ans:0},
+  {cat:"Думки/Дискусія",de:"Ich finde das ___ interessant.",ua:"Я вважаю це дуже цікавим.",opts:["sehr","echt","wirklich"],ans:0},
+  {cat:"Думки/Дискусія",de:"Das sehe ich ___ so.",ua:"Я теж так бачу.",opts:["genauso","ähnlich","anders"],ans:0},
+  // ── ОПИС ЛЮДЕЙ ──
+  {cat:"Опис людей",de:"Er ist sehr ___ und hilfsbereit.",ua:"Він дуже дружній і готовий допомогти.",opts:["freundlich","lustig","ruhig"],ans:0},
+  {cat:"Опис людей",de:"Sie ist ___ geboren.",ua:"Вона народилася в 1990 році.",opts:["1990","im Jahr","geboren"],ans:0},
+  {cat:"Опис людей",de:"Mein Chef ist manchmal ___.",ua:"Мій начальник іноді суворий.",opts:["streng","nett","lustig"],ans:0},
+  {cat:"Опис людей",de:"Er hat ___ Haare.",ua:"У нього коротке темне волосся.",opts:["kurze dunkle","lange braune","keine"],ans:0},
+  {cat:"Опис людей",de:"Sie sieht sehr ___ aus.",ua:"Вона виглядає дуже привабливо.",opts:["attraktiv","jung","müde"],ans:0},
+  // ── ПИТАЛЬНІ СЛОВА ──
+  {cat:"Питання",de:"___ wohnst du?",ua:"Де ти живеш?",opts:["Wo","Wann","Warum"],ans:0},
+  {cat:"Питання",de:"___ kommst du?",ua:"Звідки ти?",opts:["Woher","Wohin","Wo"],ans:0},
+  {cat:"Питання",de:"___ fährt der Zug ab?",ua:"Коли відправляється поїзд?",opts:["Wann","Wie","Was"],ans:0},
+  {cat:"Питання",de:"___ ist dein Lieblingsessen?",ua:"Яка твоя улюблена їжа?",opts:["Was","Welches","Wer"],ans:0},
+  {cat:"Питання",de:"___ lange dauert die Fahrt?",ua:"Скільки часу займає поїздка?",opts:["Wie","Was","Wann"],ans:0},
+  {cat:"Питання",de:"___ hat das gemacht?",ua:"Хто це зробив?",opts:["Wer","Wen","Wem"],ans:0},
+  {cat:"Питання",de:"___ bist du so spät?",ua:"Чому ти так пізно?",opts:["Warum","Wann","Wie"],ans:0},
+  {cat:"Питання",de:"___ geht es dir?",ua:"Як ти себе почуваєш?",opts:["Wie","Was","Wer"],ans:0},
+  {cat:"Питання",de:"___ kostet das?",ua:"Скільки це коштує?",opts:["Wie viel","Was","Wie"],ans:0},
+  {cat:"Питання",de:"___ fährst du?",ua:"Куди ти їдеш?",opts:["Wohin","Woher","Wo"],ans:0},
+  // ── ЧАС / ДАТА ──
+  {cat:"Час",de:"___ ist es?",ua:"Котра година?",opts:["Wie viel Uhr","Wann","Um wie viel"],ans:0},
+  {cat:"Час",de:"Heute ist ___.",ua:"Сьогодні понеділок.",opts:["Montag","Dienstag","Mittwoch"],ans:0},
+  {cat:"Час",de:"Im ___ ist es sehr heiß.",ua:"Влітку дуже жарко.",opts:["Sommer","Winter","Herbst"],ans:0},
+  {cat:"Час",de:"Der Kurs beginnt ___ 9 Uhr.",ua:"Курс починається о 9 годині.",opts:["um","an","bei"],ans:0},
+  {cat:"Час",de:"Wir treffen uns ___ Freitag.",ua:"Ми зустрічаємося в п'ятницю.",opts:["am","an","auf"],ans:0},
+  {cat:"Час",de:"Er kommt ___ nächster Woche.",ua:"Він приходить наступного тижня.",opts:["in","an","nächste"],ans:0},
+  // ── ПРИКМЕТНИКИ ──
+  {cat:"Прикметники",de:"Das Wetter ist ___ schön.",ua:"Погода дуже гарна.",opts:["sehr","viel","so"],ans:0},
+  {cat:"Прикметники",de:"Er ist ___ als sein Bruder.",ua:"Він старший за свого брата.",opts:["älter","alt","älteste"],ans:0},
+  {cat:"Прикметники",de:"Das ist das ___ Restaurant hier.",ua:"Це найкращий ресторан тут.",opts:["beste","besser","gut"],ans:0},
+  {cat:"Прикметники",de:"Die Wohnung ist sehr ___.",ua:"Квартира дуже велика.",opts:["groß","größer","größte"],ans:0},
+  {cat:"Прикметники",de:"Das Essen war ___ lecker!",ua:"Їжа була дуже смачна!",opts:["so","mehr","am"],ans:0},
+  // ── B1-РІВЕНЬ ФРАЗИ ──
+  {cat:"B1-рівень",de:"Ich ___ mich über Ihren Anruf.",ua:"Я радий вашому дзвінку.",opts:["freue","wundere","ärgere"],ans:0},
+  {cat:"B1-рівень",de:"Es geht ___ viel besser.",ua:"Мені набагато краще.",opts:["mir","mich","meiner"],ans:0},
+  {cat:"B1-рівень",de:"Ich ___ mir das gut vorstellen.",ua:"Я можу це добре уявити.",opts:["kann","muss","darf"],ans:0},
+  {cat:"B1-рівень",de:"Das ___ sich lohnen.",ua:"Це варто зробити.",opts:["könnte","würde","sollte"],ans:0},
+  {cat:"B1-рівень",de:"Wie lange ___ Sie schon in Deutschland?",ua:"Як давно ви в Німеччині?",opts:["sind","waren","wohnen"],ans:0},
+  {cat:"B1-рівень",de:"Das war ein großes ___.",ua:"Це було велике непорозуміння.",opts:["Missverständnis","Problem","Fehler"],ans:0},
+  {cat:"B1-рівень",de:"Ich möchte mich ___ beschweren.",ua:"Я хочу поскаржитися.",opts:["gerne","bitte","kurz"],ans:0},
+  {cat:"B1-рівень",de:"Das ___ mich nicht.",ua:"Це мене не стосується.",opts:["betrifft","interessiert","trifft"],ans:0},
+  {cat:"B1-рівень",de:"___ ich fragen, wer Sie sind?",ua:"Можу я запитати, хто ви?",opts:["Darf","Kann","Soll"],ans:0},
+  {cat:"B1-рівень",de:"Ich ___ das in Betracht.",ua:"Я це беру до уваги.",opts:["ziehe","nehme","halte"],ans:0},
+  {cat:"B1-рівень",de:"Ich ___ einen anderen Vorschlag.",ua:"У мене є інша пропозиція.",opts:["hätte","habe","wäre"],ans:0},
+  {cat:"B1-рівень",de:"Gibt es noch ___?",ua:"Ще є питання?",opts:["Fragen","Probleme","Anliegen"],ans:0},
+  {cat:"B1-рівень",de:"Leider kann ich heute nicht ___.",ua:"На жаль, сьогодні я не можу прийти.",opts:["kommen","erscheinen","teilnehmen"],ans:0},
+  {cat:"B1-рівень",de:"Ich ___ mich um die Angelegenheit.",ua:"Я займуся цією справою.",opts:["kümmere","sorge","achte"],ans:0},
+  {cat:"B1-рівень",de:"Das hängt vom ___ ab.",ua:"Це залежить від погоди.",opts:["Wetter","Zufall","Tag"],ans:0},
+  // ── КУХНЯ / ЇЖА ВДОМА ──
+  {cat:"Кухня",de:"Das Essen ist fertig! Komm ___!",ua:"Їжа готова! Іди їсти!",opts:["essen","tisch","trinken"],ans:0},
+  {cat:"Кухня",de:"Das Wasser ___ schon.",ua:"Вода вже кипить.",opts:["kocht","ist heiß","brennt"],ans:0},
+  {cat:"Кухня",de:"Kannst du den Tisch ___?",ua:"Можеш накрити на стіл?",opts:["decken","räumen","aufräumen"],ans:0},
+  {cat:"Кухня",de:"Das Rezept braucht ___ Eier.",ua:"Для рецепту потрібно три яйця.",opts:["drei","viele","ein paar"],ans:0},
+  {cat:"Кухня",de:"Ich kaufe immer ___ ein.",ua:"Я завжди роблю покупки.",opts:["Lebensmittel","Sachen","Dinge"],ans:0},
+  {cat:"Кухня",de:"Hast du Hunger? Ich mache ___.",ua:"Ти голодний? Я щось приготую.",opts:["etwas","nichts","was"],ans:0},
+  {cat:"Кухня",de:"Der Kühlschrank ist ___.",ua:"Холодильник порожній.",opts:["leer","voll","kaputt"],ans:0},
+  // ── ПОГОДА РОЗШИРЕНА ──
+  {cat:"Природа",de:"Man soll Energie ___.",ua:"Треба економити енергію.",opts:["sparen","schützen","helfen"],ans:0},
+  {cat:"Природа",de:"Im Winter ___ es oft.",ua:"Взимку часто іде сніг.",opts:["schneit","regnet","friert"],ans:0},
+  {cat:"Природа",de:"Die Temperaturen ___ unter Null.",ua:"Температура падає нижче нуля.",opts:["fallen","sinken","gehen"],ans:0},
+  // ── ТЕЛЕФОН/ІНТЕРНЕТ ──
+  {cat:"Інтернет",de:"Wie ist das ___?",ua:"Який пароль від WiFi?",opts:["WLAN-Passwort","Internetname","Netzcode"],ans:0},
+  {cat:"Інтернет",de:"Das ___ funktioniert nicht.",ua:"Інтернет не працює.",opts:["Internet","Handy","Netz"],ans:0},
+  {cat:"Інтернет",de:"Ich bin gerade nicht ___.",ua:"Зараз я недоступний.",opts:["erreichbar","hier","dabei"],ans:0},
+  {cat:"Інтернет",de:"Können Sie mir eine ___ schicken?",ua:"Ви можете надіслати мені повідомлення?",opts:["Nachricht","Brief","Anruf"],ans:0},
+  // ── ОСТАННІЙ БЛОК ──
+  {cat:"Побут",de:"___ geht es Ihnen?",ua:"Як ви себе почуваєте?",opts:["Wie","Was","Wo"],ans:0},
+  {cat:"Побут",de:"Ich ___ Hunger.",ua:"Я голодний.",opts:["habe","bin","mache"],ans:0},
+  {cat:"Побут",de:"Ich ___ gerne ein Zimmer reservieren.",ua:"Я хотів би зарезервувати кімнату.",opts:["möchte","mag","will"],ans:0},
+  {cat:"Побут",de:"Die Rechnung, ___!",ua:"Рахунок, будь ласка!",opts:["bitte","danke","gern"],ans:0},
+  {cat:"Побут",de:"Können Sie mir ___ helfen?",ua:"Ви можете мені допомогти?",opts:["bitte","danke","gern"],ans:0},
+  {cat:"Різне",de:"Könnten Sie das bitte ___?",ua:"Не могли б ви це повторити?",opts:["wiederholen","sagen","machen"],ans:0},
+  {cat:"Різне",de:"Entschuldigung, ich habe das nicht ___.",ua:"Вибачте, я не зрозумів.",opts:["verstanden","gehört","gewusst"],ans:0},
+  {cat:"Різне",de:"Bitte sprechen Sie ___!",ua:"Говоріть, будь ласка, повільніше!",opts:["langsamer","lauter","schneller"],ans:0},
+  {cat:"Різне",de:"Ich lerne Deutsch ___ sechs Monaten.",ua:"Я вчу німецьку вже шість місяців.",opts:["seit","vor","für"],ans:0},
+  {cat:"Різне",de:"Das ___ mir gut.",ua:"Мені це подобається.",opts:["gefällt","mag","freut"],ans:0},
+  {cat:"Різне",de:"Ich freue ___ auf das Wochenende.",ua:"Я чекаю на вихідні.",opts:["mich","mir","sich"],ans:0},
+  {cat:"Різне",de:"Herzlichen ___ zum Geburtstag!",ua:"З днем народження!",opts:["Glückwunsch","Dank","Gruß"],ans:0},
+  {cat:"Різне",de:"Das war eine tolle ___!",ua:"Це була чудова ідея!",opts:["Idee","Sache","Meinung"],ans:0},
+  {cat:"Різне",de:"Ich finde das gar nicht ___.",ua:"Я зовсім не вважаю це смішним.",opts:["lustig","witzig","komisch"],ans:0},
+  {cat:"Різне",de:"Mir ist etwas Wichtiges ___.",ua:"Мені щось важливе спало на думку.",opts:["eingefallen","passiert","aufgefallen"],ans:0},
+  {cat:"Різне",de:"Das ist wirklich nicht ___.",ua:"Це справді не моя провина.",opts:["meine Schuld","mein Problem","meine Sache"],ans:0},
+  {cat:"Різне",de:"Ich kann das gut ___.",ua:"Я можу це добре зрозуміти.",opts:["verstehen","nachvollziehen","akzeptieren"],ans:1},
+];
+
+let questions=[], current=0, score=0, answered=false;
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function startQuiz(n){
+  const shuffled=shuffle(ALL_QUESTIONS);
+  questions=n>0?shuffled.slice(0,Math.min(n,shuffled.length)):shuffled;
+  current=0;score=0;
+  showScreen('quizScreen');
+  renderQuestion();
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderQuestion(){
+  const q=questions[current], total=questions.length;
+  document.getElementById('counter').textContent=String(current+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+  document.getElementById('scoreDisplay').textContent=score+' правильно';
+  document.getElementById('progressFill').style.width=((current/total)*100)+'%';
+  document.getElementById('categoryBadge').textContent=q.cat;
+  document.getElementById('questionDE').textContent=q.de;
+  document.getElementById('questionUA').textContent='('+q.ua+')';
+  const container=document.getElementById('optionsContainer');
+  container.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='option';
+    btn.innerHTML=`<span>${opt}</span>`;
+    btn.onclick=()=>selectAnswer(i);
+    container.appendChild(btn);
+  });
+  document.getElementById('feedbackBar').className='feedback-bar';
+  document.getElementById('feedbackBar').textContent='';
+  document.getElementById('nextBtn').className='btn btn-primary next-btn';
+  answered=false;
+}
+
+function selectAnswer(idx){
+  if(answered)return;
+  answered=true;
+  const q=questions[current];
+  const opts=document.querySelectorAll('.option');
+  opts.forEach(btn=>btn.disabled=true);
+  const feedback=document.getElementById('feedbackBar');
+  if(idx===q.ans){
+    opts[idx].classList.add('correct');
+    score++;
+    feedback.textContent='✅ Правильно!';
+    feedback.className='feedback-bar show correct-fb';
+  }else{
+    opts[idx].classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    feedback.textContent='❌ Неправильно! Правильна відповідь: '+q.opts[q.ans];
+    feedback.className='feedback-bar show wrong-fb';
+  }
+  document.getElementById('scoreDisplay').textContent=score+' правильно';
+  document.getElementById('nextBtn').className='btn btn-primary next-btn show';
+}
+
+function nextQuestion(){
+  current++;
+  if(current>=questions.length){showResults();}
+  else{renderQuestion();}
+}
+
+function showResults(){
+  const total=questions.length;
+  const pct=Math.round((score/total)*100);
+  document.getElementById('resultPct').textContent=pct+'%';
+  document.getElementById('correctCount').textContent=score;
+  document.getElementById('wrongCount').textContent=total-score;
+  let title,msg;
+  if(pct>=90){title='AUSGEZEICHNET! 🏆';msg='Відмінно! Ти готовий до іспиту B1!';}
+  else if(pct>=75){title='SEHR GUT! 🌟';msg='Дуже добре! Ще трохи практики — і ти готовий!';}
+  else if(pct>=60){title='GUT! 👍';msg='Непогано! Продовжуй вправлятися.';}
+  else if(pct>=40){title='WEITER SO! 💪';msg='Є над чим попрацювати. Не здавайся!';}
+  else{title='ÜBEN! 📚';msg='Треба більше практики. Ти зможеш!';}
+  document.getElementById('resultTitle').textContent=title;
+  document.getElementById('resultMsg').textContent=msg+` (${score} з ${total})`;
+  showScreen('resultsScreen');
+}
+</script>
+</body>
+</html>
